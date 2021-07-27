@@ -1,8 +1,10 @@
 package me.yokeyword.indexablerv;
 
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
@@ -41,7 +43,7 @@ public abstract class IndexableAdapter<T extends IndexableEntity> {
     }
 
     /**
-     * @param callback Register a callback to be invoked when this datas is processed.
+     * @param callback 注册要在处理此数据时调用的回调。
      */
     public void setDatas(List<T> datas, IndexCallback<T> callback) {
         this.mCallback = callback;
@@ -98,7 +100,7 @@ public abstract class IndexableAdapter<T extends IndexableEntity> {
         mDataSetObservable.notifySetListener(type);
     }
 
-    public List<T> getItems() {
+    public List<T> getData() {
         return mDatas;
     }
 

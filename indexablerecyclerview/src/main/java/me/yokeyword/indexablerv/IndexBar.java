@@ -6,13 +6,18 @@ import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import me.yokeyword.indexablerecyclerview.R;
 
@@ -84,7 +89,9 @@ class IndexBar extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        if (mIndexList.size() == 0) return;
+        if (mIndexList.size() == 0) {
+            return;
+        }
 
         mIndexHeight = ((float) getHeight()) / mIndexList.size();
 
@@ -98,7 +105,9 @@ class IndexBar extends View {
     }
 
     int getPositionForPointY(float y) {
-        if (mIndexList.size() <= 0) return -1;
+        if (mIndexList.size() <= 0) {
+            return -1;
+        }
 
         int position = (int) (y / mIndexHeight);
 
@@ -142,6 +151,20 @@ class IndexBar extends View {
         if (showAllLetter) {
             mIndexList = Arrays.asList(getResources().getStringArray(R.array.indexable_letter));
             mIndexList = new ArrayList<>(mIndexList);
+            //去除indexbar的 定、热
+            mIndexList.clear();
+//            entity.setIndex(pinyin.substring(0, 1).toUpperCase());
+            Set<String> set = new HashSet<>();
+            for (EntityWrapper entityWrapper : datas) {
+                Log.i("lwh", "entityWrapper index=" + entityWrapper.getIndex() + ",field=" + entityWrapper.getIndexByField() + ",title=" + entityWrapper.getIndexTitle());
+                if (entityWrapper.getIndex().contains("定")
+                        || entityWrapper.getIndex().contains("热")) {
+
+                } else {
+                    set.add(entityWrapper.getIndex());
+                }
+            }
+            mIndexList.addAll(set);
             tempHeaderList = new ArrayList<>();
         }
         for (int i = 0; i < datas.size(); i++) {
@@ -150,14 +173,17 @@ class IndexBar extends View {
                 String index = wrapper.getIndex();
                 if (!TextUtils.isEmpty(index)) {
                     if (!showAllLetter) {
+                        Log.i("lwh", "mIndexList 1  index=" + index);
                         mIndexList.add(index);
                     } else {
                         if (IndexableLayout.INDEX_SIGN.equals(index)) {
+                            Log.i("lwh", "mIndexList 2 index=" + IndexableLayout.INDEX_SIGN);
                             mIndexList.add(IndexableLayout.INDEX_SIGN);
                         } else if (mIndexList.indexOf(index) < 0) {
                             if (wrapper.getHeaderFooterType() == EntityWrapper.TYPE_HEADER && tempHeaderList.indexOf(index) < 0) {
                                 tempHeaderList.add(index);
                             } else if (wrapper.getHeaderFooterType() == EntityWrapper.TYPE_FOOTER) {
+                                Log.i("lwh", "mIndexList 3 index=" + index);
                                 mIndexList.add(index);
                             }
                         }
@@ -168,15 +194,40 @@ class IndexBar extends View {
                 }
             }
         }
+        //添加header的索引
         if (showAllLetter) {
-            mIndexList.addAll(0, tempHeaderList);
+//            mIndexList.addAll(0, tempHeaderList);
+        }
+
+        Collections.sort(mIndexList, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+//                if (o1.hashCode() > o2.hashCode()) {
+//                    return 1;
+//                } else if (o1.hashCode() < o2.hashCode()) {
+//                    return -1;
+//                } else {
+//                    return 0;
+//                }
+                if ("#".equals(o1)) {
+                    return 1;
+                } else if ("#".equals(o2)) {
+                    return -1;
+                } else {
+                    return o1.compareTo(o2);
+                }
+            }
+        });
+        for (String index : mIndexList) {
+            Log.i("lwh", "mIndexList  index=" + index);
         }
         requestLayout();
     }
 
     void setSelection(int firstVisibleItemPosition) {
-        if (mDatas == null || mDatas.size() <= firstVisibleItemPosition || firstVisibleItemPosition < 0)
+        if (mDatas == null || mDatas.size() <= firstVisibleItemPosition || firstVisibleItemPosition < 0) {
             return;
+        }
         EntityWrapper wrapper = mDatas.get(firstVisibleItemPosition);
         int position = mIndexList.indexOf(wrapper.getIndex());
 

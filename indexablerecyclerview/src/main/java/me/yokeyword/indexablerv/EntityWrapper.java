@@ -30,6 +30,7 @@ public class EntityWrapper<T> {
     }
 
     public String getIndex() {
+//        Log.i("lwh","index="+index);
         return index;
     }
 
